@@ -19,17 +19,17 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.unit.Dp
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.max
-import androidx.compose.ui.unit.sp
+import androidx.compose.ui.unit.*
 import androidx.compose.ui.window.Window
+import androidx.compose.ui.window.WindowState
 import androidx.compose.ui.window.application
+import androidx.compose.ui.window.rememberWindowState
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 import views.*
 import views.ParaTranzButtonTypes.*
 import java.awt.Cursor
+import java.awt.Dimension
 
 @Composable
 @Preview
@@ -38,8 +38,8 @@ fun App() {
     val showSettings = remember {mutableStateOf(false)}
 
     val settingsAlpha = remember { Animatable(0f) }
-    val settingsWidth = remember { Animatable(140f) }
-    val settingsHeight = remember { Animatable(48f) }
+    val settingsWidth = remember { Animatable(120f) }
+    val settingsHeight = remember { Animatable(42f) }
     val settingsPadding = remember { Animatable(12f) }
     val settingsColor = remember { Animatable(Color(0xff027BFF)) }
     val settingsScaleAnimation = remember { Animatable(1f) }
@@ -47,15 +47,12 @@ fun App() {
     val scaleAnimation = remember { Animatable( 0.8f ) }
     val alphaAnimation = remember { Animatable( 0f ) }
 
-    var blurTarget by remember { mutableStateOf(18.dp) }
-    val blurAnimation = animateDpAsState(blurTarget, tween(200, easing = CubicBezierEasing(0.1f, 0.2f, 0.4f, 1.0f)))
-
     LaunchedEffect(showSettings.value){
         launch {
-            settingsWidth.animateTo(if(showSettings.value) 340f else 140f, spring(1.0f, 400f) )
+            settingsWidth.animateTo(if(showSettings.value) 340f else 120f, spring(1.0f, 400f) )
         }
         launch {
-            settingsHeight.animateTo(if(showSettings.value) 400f else 48f, spring(0.9f, 500f))
+            settingsHeight.animateTo(if(showSettings.value) 400f else 42f, spring(0.9f, 500f))
         }
         launch {
             settingsPadding.animateTo(if(showSettings.value) 30f else 12f, spring(0.7f, 200f))
@@ -74,7 +71,7 @@ fun App() {
     LaunchedEffect(message.value.isNotEmpty()){
         launch {
             if (message.value.isEmpty()){
-                scaleAnimation.snapTo(0.8f)
+                scaleAnimation.animateTo(0.8f, tween(350, easing = CubicBezierEasing(0.0f, 0.75f, 0f, 1f)))
             }
             else{
                 scaleAnimation.animateTo(1f, tween(350, easing = CubicBezierEasing(0f, 1f, 0.4f, 1.0f)))
@@ -82,18 +79,10 @@ fun App() {
         }
         launch {
             if (message.value.isEmpty()){
-                alphaAnimation.snapTo(0f)
+                alphaAnimation.animateTo(0f, tween(350, easing = CubicBezierEasing(0.0f, 0.75f, 0f, 1f)))
             }
             else{
                 alphaAnimation.animateTo(1f, tween(350, easing = CubicBezierEasing(0f, 1f, 0.4f, 1.0f)))
-            }
-        }
-        launch {
-            if (message.value.isEmpty()){
-                blurTarget = 18.dp
-            }
-            else{
-                blurTarget = 0.dp
             }
         }
     }
@@ -134,7 +123,7 @@ fun App() {
                             if (!showSettings.value) Modifier.pointerHoverIcon(PointerIcon(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR)))
                             else Modifier
                         )
-                        .shadow(16.dp, shape = AbsoluteSmoothCornerShape(cornerRadius = 16.dp, smoothnessAsPercent = 60))
+                        .shadow(((settingsAlpha.value)*16f).dp, shape = AbsoluteSmoothCornerShape(cornerRadius = 16.dp, smoothnessAsPercent = 60))
                         .clip(shape = AbsoluteSmoothCornerShape(cornerRadius = 16.dp, smoothnessAsPercent = 60))
                         .clickable(enabled = !showSettings.value) {
                             showSettings.value = true
@@ -150,11 +139,10 @@ fun App() {
                 }
             }
 
-        if (message.value.isNotEmpty()) {
+        if (message.value.isNotEmpty() || alphaAnimation.value != 0f) {
             Box(
                 Modifier
                     .alpha(alphaAnimation.value)
-                    .blur(blurAnimation.value)
                     .background(Color(0x36000000))
                     .fillMaxSize()
                     .clickable(
@@ -168,7 +156,7 @@ fun App() {
                 Column(
                     modifier = Modifier
                         .scale(scaleAnimation.value)
-                        .shadow(18.dp - blurAnimation.value, shape = AbsoluteSmoothCornerShape(cornerRadius = 16.dp, smoothnessAsPercent = 60))
+                        .shadow(18.dp, shape = AbsoluteSmoothCornerShape(cornerRadius = 16.dp, smoothnessAsPercent = 60))
                         .background(Color.White, shape = AbsoluteSmoothCornerShape(cornerRadius = 16.dp, smoothnessAsPercent = 60))
                         .width(340.dp)
                         .padding(12.dp)
@@ -191,7 +179,9 @@ fun App() {
 }
 
 fun main() = application {
-    Window(onCloseRequest = ::exitApplication) {
+    Window(onCloseRequest = ::exitApplication, state = WindowState(width = 540.dp, height = 492.dp)) {
+        window.minimumSize = Dimension(540, 492)
+        window.isResizable = false
         App()
     }
 }
