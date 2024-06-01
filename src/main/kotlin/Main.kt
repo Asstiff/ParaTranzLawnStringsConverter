@@ -1,43 +1,46 @@
 import ImportedFile.setFile
+import Window.windowPinned
 import androidx.compose.animation.Animatable
-import androidx.compose.animation.core.*
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.CubicBezierEasing
+import androidx.compose.animation.core.spring
+import androidx.compose.animation.core.tween
 import androidx.compose.desktop.ui.tooling.preview.Preview
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.text.BasicTextField
-import androidx.compose.material.*
+import androidx.compose.material.Divider
+import androidx.compose.material.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
-import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.*
+import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.scale
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.TransformOrigin
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.PointerIcon
 import androidx.compose.ui.input.pointer.pointerHoverIcon
-import androidx.compose.ui.onExternalDrag
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.capitalize
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.text.toLowerCase
-import androidx.compose.ui.unit.*
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.WindowState
 import androidx.compose.ui.window.application
-import androidx.compose.ui.window.rememberWindowState
 import kotlinx.coroutines.*
-import views.*
-import views.ParaTranzButtonTypes.*
+import views.AbsoluteSmoothCornerShape
+import views.MainView
+import views.ParaTranzButton
+import views.ParaTranzButtonTypes.SUGGESTED
+import views.ParaTranzSettingsView
 import java.awt.Cursor
 import java.awt.Dimension
 import java.awt.datatransfer.DataFlavor
@@ -46,11 +49,14 @@ import java.awt.dnd.DropTarget
 import java.awt.dnd.DropTargetDropEvent
 import java.io.File
 import java.lang.Thread.sleep
-import java.util.*
 import javax.swing.JFrame
 
 enum class ImportedFileType{
     PARA, LAWN, NONE
+}
+
+object Window {
+    val windowPinned = mutableStateOf(false)
 }
 
 object Message {
@@ -209,11 +215,11 @@ fun App(window: JFrame) {
             }
             MainView()
         }
-            Box(
-                Modifier
-                    .fillMaxSize(),
-                contentAlignment = Alignment.BottomStart
-            ) {
+        Box(
+            Modifier
+                .fillMaxSize(),
+            contentAlignment = Alignment.BottomStart
+        ) {
             if (showSettings.value || settingsAlpha.value != 0f){
                 Box(modifier = Modifier
                     .fillMaxSize()
@@ -280,16 +286,16 @@ fun App(window: JFrame) {
                         .background(Color.White, shape = AbsoluteSmoothCornerShape(cornerRadius = 16.dp, smoothnessAsPercent = 60))
                         .width(340.dp)
                         .padding(12.dp)
-                        .heightIn(max = 220.dp)
+                        .heightIn(min = 140.dp,max = 320.dp)
                     ,
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     Text("提示", style = TextStyle(fontSize = 16.sp, color = Color(0xff707070)), fontWeight = FontWeight.Bold)
                     Divider(modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp), color = Color(0x20707070))
-                    Column(modifier = Modifier.padding(vertical = 36.dp, horizontal = 12.dp), verticalArrangement = Arrangement.Center){
-                        Text(Message.getMessage(), style = TextStyle(fontSize = 14.sp, color = Color(0xff484848)), textAlign = TextAlign.Center)
+                    Column(modifier = Modifier.padding(vertical = 24.dp, horizontal = 12.dp), verticalArrangement = Arrangement.Center){
+                        Text(Message.getMessage(), style = TextStyle(fontSize = 14.sp, color = Color(0xff484848)), textAlign = TextAlign.Center, maxLines = 4, overflow = TextOverflow.Ellipsis)
                     }
-                    ParaTranzButton(type = ParaTranzButtonTypes.SUGGESTED, lable = "好", onclick = {
+                    ParaTranzButton(type = SUGGESTED, lable = "好", onclick = {
                         Message.clearMessage()
                     })
                 }
@@ -299,14 +305,15 @@ fun App(window: JFrame) {
 
     LaunchedEffect(window) {
         window.dropTarget = object : DropTarget() {
+            @Suppress("UNCHECKED_CAST")
             override fun drop(evt: DropTargetDropEvent) {
                 try {
                     evt.acceptDrop(DnDConstants.ACTION_COPY)
                     val droppedFiles = evt.transferable.getTransferData(DataFlavor.javaFileListFlavor) as List<File>
                     if (droppedFiles.isNotEmpty()) {
                         val file = droppedFiles[0]
-                            setFile(file)
-                            ImportedFile.isDroppable.value = false
+                        setFile(file)
+                        ImportedFile.isDroppable.value = false
                     }
                 } catch (ex: Exception) {
                     ex.printStackTrace()
@@ -325,9 +332,10 @@ fun App(window: JFrame) {
 }
 
 fun main() = application {
-    Window(onCloseRequest = ::exitApplication, state = WindowState(width = 500.dp, height = 422.dp)) {
-        window.minimumSize = Dimension(500, 422)
+    Window(onCloseRequest = ::exitApplication, state = WindowState(width = 510.dp, height = 422.dp)) {
+        window.minimumSize = Dimension(510, 422)
         window.isResizable = false
+        window.isAlwaysOnTop = windowPinned.value
         App(window)
     }
 }

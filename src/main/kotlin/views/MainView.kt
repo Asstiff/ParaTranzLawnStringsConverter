@@ -1,18 +1,34 @@
 package views
 
-import ImportedFile
 import ImportedFile.cancelJob
+import ImportedFile.fileContent
+import ImportedFile.fileType
+import ImportedFile.isDroppable
+import ImportedFile.loadedFilename
+import ImportedFile.loading
+import ImportedFile.setFile
+import ImportedFileType
+import Message
+import Window.windowPinned
+import androidx.compose.animation.core.CubicBezierEasing
+import androidx.compose.animation.core.spring
+import androidx.compose.animation.core.tween
 import androidx.compose.desktop.ui.tooling.preview.Preview
-import androidx.compose.foundation.*
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.text.BasicTextField
-import androidx.compose.material.*
+import androidx.compose.material.CircularProgressIndicator
+import androidx.compose.material.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.unit.dp
-import utils.ParaTranzConverter
+import androidx.compose.ui.draw.scale
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.input.pointer.PointerIcon
@@ -20,19 +36,11 @@ import androidx.compose.ui.input.pointer.pointerHoverIcon
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
-
-import ImportedFile.fileType
-import ImportedFile.loadedFilename
-import ImportedFile.fileContent
-import ImportedFile.isDroppable
-import ImportedFile.loading
-import ImportedFile.setFile
-import androidx.compose.animation.core.CubicBezierEasing
-import androidx.compose.animation.core.spring
-import androidx.compose.animation.core.tween
-import androidx.compose.ui.draw.scale
-import androidx.compose.ui.draw.shadow
-import kotlinx.coroutines.*
+import androidx.compose.ui.unit.dp
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import utils.ParaTranzConverter
 import java.awt.Cursor
 import java.awt.FileDialog
 import java.awt.Frame
@@ -49,9 +57,9 @@ fun MainView(){
 
     val dragAnimation = remember { androidx.compose.animation.core.Animatable(1f) }
 
-    LaunchedEffect(ImportedFile.isDroppable.value){
+    LaunchedEffect(isDroppable.value){
         launch {
-            if (ImportedFile.isDroppable.value){
+            if (isDroppable.value){
                 dragAnimation.animateTo(1.2f, spring(0.4f, 370f))
             }
             else{
@@ -213,6 +221,25 @@ fun MainView(){
             }
 
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                Box(
+                    modifier = Modifier
+                        .padding(start = 128.dp)
+                        .pointerHoverIcon(PointerIcon(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR)))
+                        .clip(shape = AbsoluteSmoothCornerShape(cornerRadius = 16.dp, smoothnessAsPercent = 60))
+                        .clickable{
+                            windowPinned.value = !windowPinned.value
+                        }
+                        .background(if (windowPinned.value) Color(0xfff1f1f1) else Color(0xfff3f3f3), shape = AbsoluteSmoothCornerShape(cornerRadius = 16.dp, smoothnessAsPercent = 60))
+                        .width(42.dp)
+                        .height(42.dp)
+                    ,
+                    contentAlignment = Alignment.Center
+                ) {
+                    Image(painterResource("images/pin.svg"), contentDescription = "", modifier = Modifier.size(16.dp).alpha(
+                        if (windowPinned.value) 1f else 0.65f
+                    ))
+                }
+                Spacer(modifier = Modifier.weight(1f))
                 ParaTranzButton(
                     type = if ((fileType.value == ImportedFileType.LAWN)) ParaTranzButtonTypes.SUGGESTED else ParaTranzButtonTypes.NORMAL,
                     lable = "转为 ParaTranz",
