@@ -40,32 +40,81 @@ fun NoLayoutCalculationsComposable(
 fun ParaTranzSettingsView(modifier: Modifier = Modifier) {
     val apiKey = remember { mutableStateOf("") }
 
-    NoLayoutCalculationsComposable(width = 320.dp, height = 372.dp) {
-        Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.size(width = 300.dp, height = 400.dp).then(modifier)) {
+    NoLayoutCalculationsComposable(width = 320.dp, height = 252.dp) {
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            modifier = Modifier
+                .size(width = 300.dp, height = 280.dp)
+                .then(modifier)
+        ) {
             Text("ParaTranz API", style = TextStyle(fontSize = 16.sp, color = Color(0xff707070)), fontWeight = FontWeight.Bold)
             Divider(modifier = Modifier.fillMaxWidth().padding(vertical = 14.dp), color = Color(0x20707070))
             LazyColumn {
                 item {
-                    Row(modifier = Modifier
-                        .background(
-                            Color(0xfff1f1f1),
-                            shape = AbsoluteSmoothCornerShape(cornerRadius = 16.dp, smoothnessAsPercent = 60)
-                        )
-                        .padding(horizontal = 12.dp, vertical = 8.dp)
-                        ,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Text("API Key", style = TextStyle(color = Color(0xff717171), fontWeight = FontWeight.Normal))
-                        BasicTextField(
-                            value = apiKey.value,
-                            textStyle = TextStyle(color = Color(0xff414141), fontWeight = FontWeight.Bold),
-                            onValueChange = {
-                                if (it.length <= 32){
-                                    apiKey.value = it
-                                }
-                                            },
-                            modifier = Modifier.fillMaxWidth().padding(8.dp)
-                        )
+                    Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                        Row(modifier = Modifier
+                            .background(
+                                Color(0xfff1f1f1),
+                                shape = AbsoluteSmoothCornerShape(cornerRadius = 16.dp, smoothnessAsPercent = 60)
+                            )
+                            .padding(horizontal = 12.dp, vertical = 8.dp)
+                            ,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text("API Key", style = TextStyle(color = Color(0xff717171), fontWeight = FontWeight.Normal))
+                            BasicTextField(
+                                value = apiKey.value,
+                                textStyle = TextStyle(color = Color(0xff414141), fontWeight = FontWeight.Bold),
+                                onValueChange = {
+                                    if (it.length <= 32){
+                                        apiKey.value = it
+                                    }
+                                },
+                                modifier = Modifier.fillMaxWidth().padding(8.dp)
+                            )
+                        }
+                        Row(modifier = Modifier
+                            .background(
+                                Color(0xfff1f1f1),
+                                shape = AbsoluteSmoothCornerShape(cornerRadius = 16.dp, smoothnessAsPercent = 60)
+                            )
+                            .padding(horizontal = 12.dp, vertical = 8.dp)
+                            ,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text("API Key", style = TextStyle(color = Color(0xff717171), fontWeight = FontWeight.Normal))
+                            BasicTextField(
+                                value = apiKey.value,
+                                textStyle = TextStyle(color = Color(0xff414141), fontWeight = FontWeight.Bold),
+                                onValueChange = {
+                                    if (it.length <= 32){
+                                        apiKey.value = it
+                                    }
+                                },
+                                modifier = Modifier.fillMaxWidth().padding(8.dp)
+                            )
+                        }
+                        Row(modifier = Modifier
+                            .background(
+                                Color(0xfff1f1f1),
+                                shape = AbsoluteSmoothCornerShape(cornerRadius = 16.dp, smoothnessAsPercent = 60)
+                            )
+                            .padding(horizontal = 12.dp, vertical = 8.dp)
+                            ,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text("API Key", style = TextStyle(color = Color(0xff717171), fontWeight = FontWeight.Normal))
+                            BasicTextField(
+                                value = apiKey.value,
+                                textStyle = TextStyle(color = Color(0xff414141), fontWeight = FontWeight.Bold),
+                                onValueChange = {
+                                    if (it.length <= 32){
+                                        apiKey.value = it
+                                    }
+                                },
+                                modifier = Modifier.fillMaxWidth().padding(8.dp)
+                            )
+                        }
                     }
                 }
             }

@@ -17,6 +17,8 @@ import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.*
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.TransformOrigin
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.PointerIcon
 import androidx.compose.ui.input.pointer.pointerHoverIcon
 import androidx.compose.ui.onExternalDrag
@@ -96,7 +98,7 @@ object ImportedFile {
 
                     if (fileContent.value.isNotEmpty() && fileContent.value.contains("\"LawnStringsData\"")) {
                         fileType.value = ImportedFileType.LAWN
-                    } else if (fileContent.value.isNotEmpty() && fileContent.value.contains("[\n  {\n    \"key\"")) {
+                    } else if (fileContent.value.isNotEmpty() && fileContent.value.contains("\"key\"") && fileContent.value.contains("\"original\"") && fileContent.value.contains("\"translation\"")) {
                         fileType.value = ImportedFileType.PARA
                     } else {
                         fileType.value = ImportedFileType.NONE
@@ -150,6 +152,7 @@ fun App(window: JFrame) {
     val settingsPadding = remember { Animatable(12f) }
     val settingsColor = remember { Animatable(Color(0xff027BFF)) }
     val settingsScaleAnimation = remember { Animatable(1f) }
+    val settingsContentScaleAnimation = remember { Animatable(0f) }
 
     val scaleAnimation = remember { Animatable( 0.8f ) }
     val alphaAnimation = remember { Animatable( 0f ) }
@@ -159,7 +162,7 @@ fun App(window: JFrame) {
             settingsWidth.animateTo(if(showSettings.value) 340f else 120f, spring(1.0f, 400f) )
         }
         launch {
-            settingsHeight.animateTo(if(showSettings.value) 400f else 42f, spring(0.9f, 500f))
+            settingsHeight.animateTo(if(showSettings.value) 300f else 42f, spring(0.9f, 500f))
         }
         launch {
             settingsPadding.animateTo(if(showSettings.value) 30f else 12f, spring(0.7f, 200f))
@@ -169,6 +172,9 @@ fun App(window: JFrame) {
         }
         launch {
             settingsScaleAnimation.animateTo(if(showSettings.value) 0.95f else 1f, tween(500, easing = CubicBezierEasing(0.5f, 1.3f, 0.3f, 0.95f)))
+        }
+        launch {
+            settingsContentScaleAnimation.animateTo(if(showSettings.value) 1f else 0f, tween(350, easing = CubicBezierEasing(0.2f, 0.65f, 0f, 1f)))
         }
         launch {
             settingsColor.animateTo(if(showSettings.value) Color.White else Color(0xff027BFF), tween(300, easing = CubicBezierEasing(0.5f, 1f, 0.3f, 0.95f)))
@@ -241,7 +247,14 @@ fun App(window: JFrame) {
                     ,
                     contentAlignment = Alignment.Center
                 ) {
-                    ParaTranzSettingsView()
+                    ParaTranzSettingsView(modifier = Modifier
+                        .graphicsLayer(
+                            scaleX = settingsContentScaleAnimation.value,
+                            scaleY = settingsContentScaleAnimation.value,
+                            transformOrigin = TransformOrigin(0.5f, 1f)
+                        )
+                        .alpha(settingsContentScaleAnimation.value)
+                    )
                     Text("ParaTranz API", style = TextStyle(color = Color(0xfff3f3f3), fontSize = 14.sp), textAlign = TextAlign.Center, maxLines = 1, modifier = Modifier.alpha((1 - settingsAlpha.value)))
                 }
             }
@@ -312,8 +325,8 @@ fun App(window: JFrame) {
 }
 
 fun main() = application {
-    Window(onCloseRequest = ::exitApplication, state = WindowState(width = 540.dp, height = 492.dp)) {
-        window.minimumSize = Dimension(540, 492)
+    Window(onCloseRequest = ::exitApplication, state = WindowState(width = 500.dp, height = 422.dp)) {
+        window.minimumSize = Dimension(500, 422)
         window.isResizable = false
         App(window)
     }
