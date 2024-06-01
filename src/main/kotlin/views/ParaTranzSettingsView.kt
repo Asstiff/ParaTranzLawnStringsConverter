@@ -37,11 +37,11 @@ fun NoLayoutCalculationsComposable(
 }
 
 @Composable
-fun ParaTranzSettingsView() {
+fun ParaTranzSettingsView(modifier: Modifier = Modifier) {
     val apiKey = remember { mutableStateOf("") }
 
     NoLayoutCalculationsComposable(width = 320.dp, height = 372.dp) {
-        Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.size(width = 300.dp, height = 400.dp)) {
+        Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.size(width = 300.dp, height = 400.dp).then(modifier)) {
             Text("ParaTranz API", style = TextStyle(fontSize = 16.sp, color = Color(0xff707070)), fontWeight = FontWeight.Bold)
             Divider(modifier = Modifier.fillMaxWidth().padding(vertical = 14.dp), color = Color(0x20707070))
             LazyColumn {

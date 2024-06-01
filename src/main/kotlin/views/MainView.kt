@@ -1,5 +1,7 @@
 package views
 
+import ImportedFile
+import ImportedFile.cancelJob
 import androidx.compose.desktop.ui.tooling.preview.Preview
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
@@ -18,29 +20,45 @@ import androidx.compose.ui.input.pointer.pointerHoverIcon
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
+
+import ImportedFile.fileType
+import ImportedFile.loadedFilename
+import ImportedFile.fileContent
+import ImportedFile.isDroppable
+import ImportedFile.loading
+import ImportedFile.setFile
+import androidx.compose.animation.core.CubicBezierEasing
+import androidx.compose.animation.core.spring
+import androidx.compose.animation.core.tween
+import androidx.compose.ui.draw.scale
+import androidx.compose.ui.draw.shadow
 import kotlinx.coroutines.*
 import java.awt.Cursor
 import java.awt.FileDialog
 import java.awt.Frame
 import java.io.File
 
-enum class FileType{
-    PARA, LAWN, NONE
-}
-
 @Composable
 @Preview
-fun MainView(message: MutableState<String>){
-    var fileContent by remember { mutableStateOf<String?>(null) }
-    var fileType: MutableState<FileType> = remember { mutableStateOf(FileType.NONE) }
+fun MainView(){
     var versionText by remember { mutableStateOf("") }
     var isRelChecked by remember { mutableStateOf(false) }
     var buildNumber by remember { mutableStateOf(1) }
-    var loading by remember { mutableStateOf(false) }
-    var loadedFilename by remember { mutableStateOf("") }
 
     val scope = rememberCoroutineScope()
-    var job by remember { mutableStateOf<Job?>(null) }
+
+    val dragAnimation = remember { androidx.compose.animation.core.Animatable(1f) }
+
+    LaunchedEffect(ImportedFile.isDroppable.value){
+        launch {
+            if (ImportedFile.isDroppable.value){
+                dragAnimation.animateTo(1.2f, spring(0.4f, 370f))
+            }
+            else{
+                dragAnimation.animateTo(1.0f, tween(350, easing = CubicBezierEasing(0.46f, 0.76f, 0f, 1f)))
+            }
+        }
+    }
 
     Column(
         modifier = Modifier.padding(12.dp).fillMaxSize(),
@@ -59,7 +77,7 @@ fun MainView(message: MutableState<String>){
                 Text("版本号", style = TextStyle(color = Color(0xff717171), fontWeight = FontWeight.Normal))
                 BasicTextField(
                     value = versionText,
-                    textStyle = TextStyle(color = Color(0xff414141), fontWeight = FontWeight.Bold),
+                    textStyle = TextStyle(color = Color(0xff414141), fontWeight = FontWeight.SemiBold),
                     onValueChange = { versionText = it },
                     modifier = Modifier.fillMaxWidth().padding(8.dp),
                     decorationBox = { innerTextField ->
@@ -90,7 +108,7 @@ fun MainView(message: MutableState<String>){
                     Text("构建号", style = TextStyle(color = Color(0xff717171), fontWeight = FontWeight.Normal))
                     BasicTextField(
                         value = buildNumber.toString(),
-                        textStyle = TextStyle(color = Color(0xff414141), fontWeight = FontWeight.Bold),
+                        textStyle = TextStyle(color = Color(0xff414141), fontWeight = FontWeight.SemiBold),
                         onValueChange = {
                             if (it.matches(Regex("^\\d+\$")) || it.isEmpty()){
                                 if (it.isEmpty()){
@@ -168,93 +186,60 @@ fun MainView(message: MutableState<String>){
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             ParaTranzButton(ParaTranzButtonTypes.CLEAR,
-                imagePath = if (loadedFilename.isNotEmpty() || !fileContent.isNullOrEmpty()) "images/repick.svg" else "images/import.svg",
-                lable = if (loadedFilename.isNotEmpty() || !fileContent.isNullOrEmpty()) loadedFilename else "上传文件",
+                imagePath = if ((loadedFilename.value.isNotEmpty() || fileContent.value.isNotEmpty()) && !isDroppable.value) "images/repick.svg" else "images/import.svg",
+                lable = if (isDroppable.value) "" else if ((loadedFilename.value.isNotEmpty() || fileContent.value.isNotEmpty())) loadedFilename.value else "载入文件",
+                modifier = Modifier
+                    .shadow(
+                        elevation = ((dragAnimation.value - 1) * 80).dp,
+                        shape = AbsoluteSmoothCornerShape(cornerRadius = 16.dp, smoothnessAsPercent = 60),
+                        spotColor = Color(0xff027BFF),
+                        ambientColor = Color.White
+                    )
+                    .scale(dragAnimation.value),
                 onclick = {
-                    if (loading){
-                        if (job != null){
-                            job!!.cancel()
-                            loading = false
-                            fileContent = ""
-                            loadedFilename = ""
-                        }
+                    if (loading.value){
+                        cancelJob()
                     }
                     else{
                         val file = chooseFile("选择文件")
                         if (file != null) {
-                            if (file.length() < 10000000){
-                                loading = true
-                                job = scope.launch(Dispatchers.IO) {
-                                    try {
-                                        loadedFilename = file.nameWithoutExtension
-                                        fileContent = file.readText()
-
-                                        if (!fileContent.isNullOrEmpty() && fileContent!!.contains("\"LawnStringsData\"")){
-                                            fileType.value = FileType.LAWN
-                                        }
-                                        else if (!fileContent.isNullOrEmpty() && fileContent!!.contains("[\n" +
-                                                    "  {\n" +
-                                                    "    \"key\"")){
-                                            fileType.value = FileType.PARA
-                                        }
-                                        else {
-                                            fileType.value = FileType.NONE
-                                            message.value = "无法确定输入文件格式。"
-                                        }
-                                        withContext(Dispatchers.Default) {
-                                            loading = false
-                                        }
-                                    }
-                                    catch (_: Exception){
-                                        loading = false
-                                        fileContent = ""
-                                        loadedFilename = ""
-                                    }
-                                }
+                                setFile(file = file)
                             }
-                            else{
-                                message.value = "文件过大。"
-                            }
-                        }
                     }
             }){
-                if (loading) {
-                    CircularProgressIndicator(strokeCap = StrokeCap.Round, color = Color(0xff027BFF), modifier = Modifier.size(16.dp), strokeWidth = 2.dp)
+                if (loading.value) {
+                    CircularProgressIndicator(strokeCap = StrokeCap.Round, color = Color(0xff027BFF), modifier = Modifier.size(16.dp), strokeWidth = 1.5.dp)
                 }
             }
 
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 ParaTranzButton(
-                    type = if ((fileType.value == FileType.LAWN)) ParaTranzButtonTypes.SUGGESTED else ParaTranzButtonTypes.NORMAL,
+                    type = if ((fileType.value == ImportedFileType.LAWN)) ParaTranzButtonTypes.SUGGESTED else ParaTranzButtonTypes.NORMAL,
                     lable = "转为 ParaTranz",
-                    enabled = !fileContent.isNullOrEmpty() && (fileType.value != FileType.PARA),
+                    enabled = fileContent.value.isNotEmpty() && (fileType.value != ImportedFileType.PARA),
                     onclick = {
-                    if (fileContent != null) {
-                        val file = saveFile("保存文件", "LawnStrings-ParaTranz.json")
+                    val file = saveFile("保存文件", "LawnStrings-ParaTranz.json")
                         if (file != null) {
                             scope.launch(Dispatchers.IO) {
                                 try {
-                                    ParaTranzConverter.toParaTranz(fileContent!!, file)
+                                    ParaTranzConverter.toParaTranz(fileContent.value, file)
                                     withContext(Dispatchers.Default) {
-                                        message.value = "文件已成功转换为 ParaTranz 格式"
+                                        Message.showMessage("文件已成功转换为 ParaTranz 格式")
                                     }
                                 }
                                 catch (_ : Exception){
-                                    message.value = "导出出错。"
+                                    Message.showMessage("导出出错。")
                                 }
                             }
                         }
-                    } else {
-                        message.value = "请先上传文件"
-                    }
-                })
+                    })
 
                 ParaTranzButton(
-                    type = if ((fileType.value == FileType.PARA)) ParaTranzButtonTypes.SUGGESTED else ParaTranzButtonTypes.NORMAL,
-                    enabled = !fileContent.isNullOrEmpty() && (fileType.value != FileType.LAWN),
+                    type = if ((fileType.value == ImportedFileType.PARA)) ParaTranzButtonTypes.SUGGESTED else ParaTranzButtonTypes.NORMAL,
+                    enabled = fileContent.value.isNotEmpty() && (fileType.value != ImportedFileType.LAWN),
                     lable = "转为 LawnStrings",
                     onclick = {
-                    if (fileContent != null && versionText.isNotEmpty()) {
+                    if (fileContent.value.isNotEmpty() && versionText.isNotEmpty()) {
                         val versionMain = versionText.split('.').take(2).joinToString(".")
                         val versionFull = versionText
                         val relPre = if (isRelChecked) "REL" else "PRE"
@@ -262,19 +247,19 @@ fun MainView(message: MutableState<String>){
                         if (file != null) {
                             scope.launch(Dispatchers.IO) {
                                 try {
-                                    ParaTranzConverter.toJson(fileContent!!, file, versionMain, versionFull, relPre, buildNumber)
+                                    ParaTranzConverter.toJson(fileContent.value, file, versionMain, versionFull, relPre, buildNumber)
                                     buildNumber++
                                     withContext(Dispatchers.Default) {
-                                        message.value = "文件已成功转换为 LawnStrings 格式"
+                                        Message.showMessage("文件已成功转换为 LawnStrings 格式")
                                     }
                                 }
                                 catch (_ : Exception){
-                                    message.value = "导出出错。"
+                                    Message.showMessage("导出出错。")
                                 }
                             }
                         }
                     } else {
-                        message.value = "请先上传文件并输入版本信息"
+                        Message.showMessage("请先载入文件并输入版本信息")
                     }
                 })
             }

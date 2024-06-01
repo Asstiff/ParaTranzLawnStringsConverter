@@ -9,6 +9,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.PointerIcon
 import androidx.compose.ui.input.pointer.pointerHoverIcon
@@ -25,10 +26,11 @@ enum class ParaTranzButtonTypes{
 }
 
 @Composable
-fun ParaTranzButton(type: ParaTranzButtonTypes, imagePath: String = "", lable: String = "", enabled: Boolean = true, onclick: () -> Unit = {}, content: @Composable () -> Unit = {}) {
+fun ParaTranzButton(type: ParaTranzButtonTypes, imagePath: String = "", lable: String = "", enabled: Boolean = true, modifier: Modifier = Modifier, onclick: () -> Unit = {}, content: @Composable () -> Unit = {}) {
     Row(modifier = Modifier
-        .widthIn(min = 100.dp)
+        .then(modifier)
         .clip(AbsoluteSmoothCornerShape(cornerRadius = 16.dp, smoothnessAsPercent = 60))
+        .widthIn(min = 100.dp)
         .clickable(enabled = enabled) {
             onclick()
         }
@@ -36,7 +38,7 @@ fun ParaTranzButton(type: ParaTranzButtonTypes, imagePath: String = "", lable: S
             if (enabled)
                 when(type){
                     NORMAL -> Modifier.background(Color(0xfff1f1f1))
-                    CLEAR -> Modifier
+                    CLEAR -> Modifier.background(Color.White)
                     WARN -> Modifier.background(Color(0xffa1a1a1))
                     SUGGESTED -> Modifier.background(Color(0xff027BFF))
             } else
