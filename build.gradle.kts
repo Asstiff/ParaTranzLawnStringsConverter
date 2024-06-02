@@ -24,6 +24,7 @@ dependencies {
     implementation("org.json:json:20231013")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.5.2")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-javafx:1.5.2")
+    implementation("com.squareup.okhttp3:okhttp:4.9.2")
 }
 
 compose.desktop {

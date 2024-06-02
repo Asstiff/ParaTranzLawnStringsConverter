@@ -60,7 +60,6 @@ object ParaTranzConverter {
             resultEncode = resultEncode.replace("【version_full】", versionFull)
 
             resultEncode = "{\"objects\":[{\"aliases\":[\"LawnStringsData\"],\"objclass\":\"LawnStringsData\",\"objdata\":{\"LocStringValues\":$resultEncode}}],\"version\":1}"
-            resultEncode = "{\"objects\":[{\"aliases\":[\"LawnStringsData\"],\"objclass\":\"LawnStringsData\",\"objdata\":{\"LocStringValues\":$resultEncode}}],\"version\":1}"
 
             outputFile.writeText(resultEncode)
         } catch (e: Exception) {
