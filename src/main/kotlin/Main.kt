@@ -343,10 +343,12 @@ fun App(window: JFrame) {
 }
 
 fun main() = application {
-    Window(onCloseRequest = ::exitApplication, state = WindowState(width = 520.dp, height = 422.dp)) {
+    Window(onCloseRequest = ::exitApplication, state = WindowState(width = 520.dp, height = 422.dp), icon = painterResource("images/icon_512x512@2x.png")) {
         window.minimumSize = Dimension(520, 422)
         window.isResizable = false
         window.isAlwaysOnTop = windowPinned.value
+        window.name = "ParaTranz Converter"
+        window.title = "ParaTranz Converter for LawnStrings"
         App(window)
     }
 }

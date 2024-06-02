@@ -34,7 +34,14 @@ compose.desktop {
         nativeDistributions {
             targetFormats(TargetFormat.Dmg, TargetFormat.Exe)
             packageName = "ParaTranzConverter"
-            packageVersion = "1.0.0"
+            packageVersion = "0.5.1"
+
+            macOS {
+                iconFile.set(project.file("src/main/resources/images/icon.icns"))
+            }
+            windows {
+                iconFile.set(project.file("src/main/resources/images/icon_512x512.ico"))
+            }
         }
     }
 }
