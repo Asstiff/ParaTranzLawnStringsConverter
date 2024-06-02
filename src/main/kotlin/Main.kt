@@ -1,3 +1,4 @@
+import APIConfig.showSettings
 import ImportedFile.setFile
 import Window.windowPinned
 import androidx.compose.animation.Animatable
@@ -50,9 +51,17 @@ import java.awt.dnd.DropTargetDropEvent
 import java.io.File
 import java.lang.Thread.sleep
 import javax.swing.JFrame
+import kotlin.math.max
 
 enum class ImportedFileType{
     PARA, LAWN, NONE
+}
+
+object APIConfig {
+    val apiKey = mutableStateOf("")
+    val projectId = mutableStateOf("")
+    val fileName = mutableStateOf("")
+    val showSettings = mutableStateOf(false)
 }
 
 object Window {
@@ -150,8 +159,6 @@ suspend fun File.readTextWithCancellation(): String = withContext(Dispatchers.IO
 @Composable
 @Preview
 fun App(window: JFrame) {
-    val showSettings = remember {mutableStateOf(false)}
-
     val settingsAlpha = remember { Animatable(0f) }
     val settingsWidth = remember { Animatable(120f) }
     val settingsHeight = remember { Animatable(42f) }
@@ -163,9 +170,10 @@ fun App(window: JFrame) {
     val scaleAnimation = remember { Animatable( 0.8f ) }
     val alphaAnimation = remember { Animatable( 0f ) }
 
+
     LaunchedEffect(showSettings.value){
         launch {
-            settingsWidth.animateTo(if(showSettings.value) 340f else 120f, spring(1.0f, 400f) )
+            settingsWidth.animateTo(if(showSettings.value) 386f else 120f, spring(1.0f, 400f) )
         }
         launch {
             settingsHeight.animateTo(if(showSettings.value) 300f else 42f, spring(0.9f, 500f))
@@ -180,7 +188,7 @@ fun App(window: JFrame) {
             settingsScaleAnimation.animateTo(if(showSettings.value) 0.95f else 1f, tween(500, easing = CubicBezierEasing(0.5f, 1.3f, 0.3f, 0.95f)))
         }
         launch {
-            settingsContentScaleAnimation.animateTo(if(showSettings.value) 1f else 0f, tween(350, easing = CubicBezierEasing(0.2f, 0.65f, 0f, 1f)))
+            settingsContentScaleAnimation.animateTo(if(showSettings.value) 1f else 0f, tween(270, delayMillis = if (showSettings.value) 100 else 0, easing = CubicBezierEasing(0.2f, 0.65f, 0f, 1f)))
         }
         launch {
             settingsColor.animateTo(if(showSettings.value) Color.White else Color(0xff027BFF), tween(300, easing = CubicBezierEasing(0.5f, 1f, 0.3f, 0.95f)))
@@ -207,7 +215,10 @@ fun App(window: JFrame) {
     }
 
     Box(Modifier.fillMaxSize()) {
-        Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.background(Color.White).scale(settingsScaleAnimation.value)) {
+        Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier
+            .background(Color.White)
+            .scale(settingsScaleAnimation.value)
+        ) {
             Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.padding(top = 36.dp, bottom = 24.dp)) {
                 Image(painterResource("images/paratranz_logo.png"), contentDescription = "", modifier = Modifier.height(height = 38.dp))
                 Text("Converter", style = TextStyle(fontSize = 18.sp, color = Color(0xff707070)), fontWeight = FontWeight.Bold)
@@ -235,35 +246,35 @@ fun App(window: JFrame) {
                     .background(Color(0x36000000))
                 )
             }
-                Box(
-                    modifier = Modifier
-                        .padding(settingsPadding.value.dp)
-                        .then(
-                            if (!showSettings.value) Modifier.pointerHoverIcon(PointerIcon(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR)))
-                            else Modifier
-                        )
-                        .shadow(((settingsAlpha.value)*16f).dp, shape = AbsoluteSmoothCornerShape(cornerRadius = 16.dp, smoothnessAsPercent = 60))
-                        .clip(shape = AbsoluteSmoothCornerShape(cornerRadius = 16.dp, smoothnessAsPercent = 60))
-                        .clickable(enabled = !showSettings.value) {
-                            showSettings.value = true
-                        }
-                        .background(settingsColor.value, shape = AbsoluteSmoothCornerShape(cornerRadius = 16.dp, smoothnessAsPercent = 60))
-                        .width(settingsWidth.value.dp)
-                        .height(settingsHeight.value.dp)
-                    ,
-                    contentAlignment = Alignment.Center
-                ) {
-                    ParaTranzSettingsView(modifier = Modifier
-                        .graphicsLayer(
-                            scaleX = settingsContentScaleAnimation.value,
-                            scaleY = settingsContentScaleAnimation.value,
-                            transformOrigin = TransformOrigin(0.5f, 1f)
-                        )
-                        .alpha(settingsContentScaleAnimation.value)
+            Box(
+                modifier = Modifier
+                    .padding(settingsPadding.value.dp)
+                    .then(
+                        if (!showSettings.value) Modifier.pointerHoverIcon(PointerIcon(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR)))
+                        else Modifier
                     )
-                    Text("ParaTranz API", style = TextStyle(color = Color(0xfff3f3f3), fontSize = 14.sp), textAlign = TextAlign.Center, maxLines = 1, modifier = Modifier.alpha((1 - settingsAlpha.value)))
-                }
+                    .shadow(((settingsAlpha.value)*16f).dp, shape = AbsoluteSmoothCornerShape(cornerRadius = 16.dp, smoothnessAsPercent = 60))
+                    .clip(shape = AbsoluteSmoothCornerShape(cornerRadius = 16.dp, smoothnessAsPercent = 60))
+                    .clickable(enabled = !showSettings.value) {
+                        showSettings.value = true
+                    }
+                    .background(settingsColor.value, shape = AbsoluteSmoothCornerShape(cornerRadius = 16.dp, smoothnessAsPercent = 60))
+                    .width(settingsWidth.value.dp)
+                    .height(settingsHeight.value.dp)
+                ,
+                contentAlignment = Alignment.Center
+            ) {
+                ParaTranzSettingsView(modifier = Modifier
+                    .graphicsLayer(
+                        scaleX = max(settingsContentScaleAnimation.value, 0.6f),
+                        scaleY = max(settingsContentScaleAnimation.value, 0.6f),
+                        transformOrigin = TransformOrigin(0.5f, 1f)
+                    )
+                    .alpha(settingsContentScaleAnimation.value)
+                )
+                Text("ParaTranz API", style = TextStyle(color = Color(0xfff3f3f3), fontSize = 14.sp), textAlign = TextAlign.Center, maxLines = 1, modifier = Modifier.alpha((1 - settingsAlpha.value)))
             }
+        }
 
         if (!Message.isMessageEmpty() || alphaAnimation.value != 0f) {
             Box(
@@ -332,8 +343,8 @@ fun App(window: JFrame) {
 }
 
 fun main() = application {
-    Window(onCloseRequest = ::exitApplication, state = WindowState(width = 510.dp, height = 422.dp)) {
-        window.minimumSize = Dimension(510, 422)
+    Window(onCloseRequest = ::exitApplication, state = WindowState(width = 520.dp, height = 422.dp)) {
+        window.minimumSize = Dimension(520, 422)
         window.isResizable = false
         window.isAlwaysOnTop = windowPinned.value
         App(window)

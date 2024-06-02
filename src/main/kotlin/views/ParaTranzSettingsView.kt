@@ -1,9 +1,9 @@
 package views
 
-import androidx.compose.foundation.background
+import APIConfig
+import APIConfig.showSettings
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.Divider
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
@@ -39,12 +39,19 @@ fun NoLayoutCalculationsComposable(
 @Composable
 fun ParaTranzSettingsView(modifier: Modifier = Modifier) {
     val apiKey = remember { mutableStateOf("") }
+    val projectId = remember { mutableStateOf("") }
+    val fileName = remember { mutableStateOf("") }
+    val showWarning1 = remember { mutableStateOf(false) }
+    val showWarning2 = remember { mutableStateOf(false) }
+    val showWarning3 = remember { mutableStateOf(false) }
 
-    NoLayoutCalculationsComposable(width = 320.dp, height = 252.dp) {
+    NoLayoutCalculationsComposable(width = 376.dp, height = 300.dp) {
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
             modifier = Modifier
-                .size(width = 300.dp, height = 280.dp)
+                .height(300.dp)
+                .requiredWidth(368.dp)
+                .padding(top = 18.dp)
                 .then(modifier)
         ) {
             Text("ParaTranz API", style = TextStyle(fontSize = 16.sp, color = Color(0xff707070)), fontWeight = FontWeight.Bold)
@@ -52,70 +59,46 @@ fun ParaTranzSettingsView(modifier: Modifier = Modifier) {
             LazyColumn {
                 item {
                     Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                        Row(modifier = Modifier
-                            .background(
-                                Color(0xfff1f1f1),
-                                shape = AbsoluteSmoothCornerShape(cornerRadius = 16.dp, smoothnessAsPercent = 60)
-                            )
-                            .padding(horizontal = 12.dp, vertical = 8.dp)
-                            ,
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Text("API Key", style = TextStyle(color = Color(0xff717171), fontWeight = FontWeight.Normal))
-                            BasicTextField(
-                                value = apiKey.value,
-                                textStyle = TextStyle(color = Color(0xff414141), fontWeight = FontWeight.Bold),
-                                onValueChange = {
-                                    if (it.length <= 32){
-                                        apiKey.value = it
-                                    }
-                                },
-                                modifier = Modifier.fillMaxWidth().padding(8.dp)
-                            )
-                        }
-                        Row(modifier = Modifier
-                            .background(
-                                Color(0xfff1f1f1),
-                                shape = AbsoluteSmoothCornerShape(cornerRadius = 16.dp, smoothnessAsPercent = 60)
-                            )
-                            .padding(horizontal = 12.dp, vertical = 8.dp)
-                            ,
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Text("API Key", style = TextStyle(color = Color(0xff717171), fontWeight = FontWeight.Normal))
-                            BasicTextField(
-                                value = apiKey.value,
-                                textStyle = TextStyle(color = Color(0xff414141), fontWeight = FontWeight.Bold),
-                                onValueChange = {
-                                    if (it.length <= 32){
-                                        apiKey.value = it
-                                    }
-                                },
-                                modifier = Modifier.fillMaxWidth().padding(8.dp)
-                            )
-                        }
-                        Row(modifier = Modifier
-                            .background(
-                                Color(0xfff1f1f1),
-                                shape = AbsoluteSmoothCornerShape(cornerRadius = 16.dp, smoothnessAsPercent = 60)
-                            )
-                            .padding(horizontal = 12.dp, vertical = 8.dp)
-                            ,
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Text("API Key", style = TextStyle(color = Color(0xff717171), fontWeight = FontWeight.Normal))
-                            BasicTextField(
-                                value = apiKey.value,
-                                textStyle = TextStyle(color = Color(0xff414141), fontWeight = FontWeight.Bold),
-                                onValueChange = {
-                                    if (it.length <= 32){
-                                        apiKey.value = it
-                                    }
-                                },
-                                modifier = Modifier.fillMaxWidth().padding(8.dp)
-                            )
-                        }
+                        ParaTranzInputView(label = "API Key", string = apiKey, maxLength = 32,
+                            warning = apiKey.value.length != 32 && showWarning1.value, showHint = showWarning1, hint = if (apiKey.value.isEmpty()) "请填写 API Key。" else "API Key 为 32 字符。")
+                        ParaTranzInputView(label = "项目 ID", string = projectId, customRegex = "^\\d+\$", maxLength = 6, warning = showWarning2.value, showHint = showWarning2, hint = "请填写项目 ID。")
+                        ParaTranzInputView(label = "文件名", string = fileName, maxLength = 128, warning = showWarning3.value, showHint = showWarning3, hint = "请填写文件名。")
                     }
+                }
+            }
+            if (showSettings.value){
+                Row(modifier = Modifier.weight(1f), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    ParaTranzButton(type = ParaTranzButtonTypes.NORMAL, lable = "取消", onclick = {
+                        if (fileName.value.isEmpty()) {
+                            fileName.value = APIConfig.fileName.value
+                        }
+                        if (projectId.value.isEmpty()) {
+                            projectId.value = APIConfig.projectId.value
+                        }
+                        if (apiKey.value.isEmpty()) {
+                            apiKey.value = APIConfig.apiKey.value
+                        }
+                        showSettings.value = false
+                    })
+                    ParaTranzButton(type = ParaTranzButtonTypes.SUGGESTED, lable = "确定", onclick = {
+                        if (apiKey.value.isNotEmpty() && apiKey.value.length == 32 && projectId.value.isNotEmpty() && fileName.value.isNotEmpty()){
+                            APIConfig.fileName.value = fileName.value
+                            APIConfig.projectId.value = projectId.value
+                            APIConfig.apiKey.value = apiKey.value
+                            showSettings.value = false
+                        }
+                        else {
+                            if (apiKey.value.isEmpty() || apiKey.value.length != 32){
+                                showWarning1.value = true
+                            }
+                            if (projectId.value.isEmpty()){
+                                showWarning2.value = true
+                            }
+                            if (fileName.value.isEmpty()){
+                                showWarning3.value = true
+                            }
+                        }
+                    })
                 }
             }
         }
