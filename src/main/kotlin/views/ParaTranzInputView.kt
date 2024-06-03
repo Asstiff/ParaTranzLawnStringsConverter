@@ -152,7 +152,7 @@ fun ParaTranzInputView(label: String = "", placeholder: String = "", customRegex
         if (hint.isNotEmpty() && (showHint.value || showHintAnimation.value != 0f)){
             Box(modifier = Modifier
                 .clip(AbsoluteSmoothCornerShape(cornerRadius = 16.dp, smoothnessAsPercent = 60))
-                .fillMaxSize()
+                .fillMaxWidth()
                 .alpha(showHintAnimation.value)
                 .scale(1 + ((1 - showHintAnimation.value) * 0.2f)),
                 contentAlignment = Alignment.Center) {

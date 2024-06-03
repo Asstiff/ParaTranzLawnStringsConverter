@@ -49,7 +49,8 @@ import java.io.File
 @Composable
 @Preview
 fun MainView(){
-    var versionText by remember { mutableStateOf("") }
+    val versionText = remember { mutableStateOf("") }
+    val showWarning = remember { mutableStateOf(false) }
     var isRelChecked by remember { mutableStateOf(false) }
     var buildNumber by remember { mutableStateOf(1) }
 
@@ -73,29 +74,8 @@ fun MainView(){
         verticalArrangement = Arrangement.SpaceBetween
     ) {
         Column( verticalArrangement = Arrangement.spacedBy(12.dp)) {
-            Row(modifier = Modifier
-                .background(
-                    Color(0xfff1f1f1),
-                    shape = AbsoluteSmoothCornerShape(cornerRadius = 16.dp, smoothnessAsPercent = 60)
-                )
-                .padding(horizontal = 12.dp, vertical = 8.dp)
-                ,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text("版本号", style = TextStyle(color = Color(0xff717171), fontWeight = FontWeight.Normal))
-                BasicTextField(
-                    value = versionText,
-                    textStyle = TextStyle(color = Color(0xff414141), fontWeight = FontWeight.SemiBold),
-                    onValueChange = { versionText = it },
-                    modifier = Modifier.fillMaxWidth().padding(8.dp),
-                    decorationBox = { innerTextField ->
-                        if (versionText.isEmpty()) {
-                            Text("11.4.1", style = TextStyle(color = Color(0xffb1b1b1)))
-                        }
-                        innerTextField()
-                    }
-                )
-            }
+
+            ParaTranzInputView(label = "版本号", string = versionText, placeholder = "11.4.1", required = true, hint = if (versionText.value.isEmpty()) "请输入适配版本号。" else "版本号格式不正确。", showHint = showWarning)
 
             Row(horizontalArrangement = Arrangement.spacedBy(4.dp), verticalAlignment = Alignment.CenterVertically) {
                 Row(modifier = Modifier
@@ -113,7 +93,7 @@ fun MainView(){
                     ,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Text("构建号", style = TextStyle(color = Color(0xff717171), fontWeight = FontWeight.Normal))
+                    Text("构建号", style = TextStyle(color = Color(0xff717171), fontWeight = FontWeight.Normal), modifier = Modifier.width(54.dp))
                     BasicTextField(
                         value = buildNumber.toString(),
                         textStyle = TextStyle(color = Color(0xff414141), fontWeight = FontWeight.SemiBold),
@@ -266,15 +246,15 @@ fun MainView(){
                     enabled = fileContent.value.isNotEmpty() && (fileType.value != ImportedFileType.LAWN),
                     lable = "转为 LawnStrings",
                     onclick = {
-                    if (fileContent.value.isNotEmpty() && versionText.isNotEmpty()) {
-                        val versionMain = versionText.split('.').take(2).joinToString(".")
+                    if (fileContent.value.isNotEmpty() && versionText.value.isNotEmpty() && versionText.value.matches(Regex("^\\d+\\.\\d+\\.\\d+\$"))) {
+                        val versionMain = versionText.value.split('.').take(2).joinToString(".")
                         val versionFull = versionText
                         val relPre = if (isRelChecked) "REL" else "PRE"
                         val file = saveFile("保存文件", "LawnStrings-en-us.json")
                         if (file != null) {
                             scope.launch(Dispatchers.IO) {
                                 try {
-                                    ParaTranzConverter.toJson(fileContent.value, file, versionMain, versionFull, relPre, buildNumber)
+                                    ParaTranzConverter.toJson(fileContent.value, file, versionMain, versionFull.value, relPre, buildNumber)
                                     buildNumber++
                                     withContext(Dispatchers.Default) {
                                         Message.showMessage("文件已成功转换为 LawnStrings 格式")
@@ -286,7 +266,7 @@ fun MainView(){
                             }
                         }
                     } else {
-                        Message.showMessage("请先载入文件并输入版本信息")
+                        showWarning.value = true
                     }
                 })
             }
