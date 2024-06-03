@@ -40,7 +40,8 @@ compose.desktop {
                 iconFile.set(project.file("src/main/resources/images/icon.icns"))
             }
             windows {
-                iconFile.set(project.file("src/main/resources/images/icon_512x512.ico"))
+                iconFile.set(project.file("src/main/resources/images/favicon.ico"))
+                shortcut = true
             }
         }
     }
