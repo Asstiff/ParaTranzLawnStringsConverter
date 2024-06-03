@@ -59,10 +59,10 @@ fun ParaTranzSettingsView(modifier: Modifier = Modifier) {
             LazyColumn {
                 item {
                     Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                        ParaTranzInputView(label = "API Key", string = apiKey, maxLength = 32,
+                        ParaTranzInputView(label = "API Key", string = apiKey, maxLength = 32, required = true,
                             warning = apiKey.value.length != 32 && showWarning1.value, showHint = showWarning1, hint = if (apiKey.value.isEmpty()) "请填写 API Key。" else "API Key 为 32 字符。")
-                        ParaTranzInputView(label = "项目 ID", string = projectId, customRegex = "^\\d+\$", maxLength = 6, warning = showWarning2.value, showHint = showWarning2, hint = "请填写项目 ID。")
-                        ParaTranzInputView(label = "文件名", string = fileName, maxLength = 128, warning = showWarning3.value, showHint = showWarning3, hint = "请填写文件名。")
+                        ParaTranzInputView(label = "项目 ID", string = projectId, required = true, customRegex = "^\\d+\$", maxLength = 6, warning = showWarning2.value, showHint = showWarning2, hint = "请填写项目 ID。")
+                        ParaTranzInputView(label = "文件名", string = fileName, required = true, maxLength = 128, warning = showWarning3.value, showHint = showWarning3, hint = "请填写文件名。")
                     }
                 }
             }

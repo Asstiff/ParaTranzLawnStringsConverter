@@ -173,7 +173,7 @@ fun App(window: JFrame) {
 
     LaunchedEffect(showSettings.value){
         launch {
-            settingsWidth.animateTo(if(showSettings.value) 386f else 120f, spring(1.0f, 400f) )
+            settingsWidth.animateTo(if(showSettings.value) 392f else 120f, spring(1.0f, 400f) )
         }
         launch {
             settingsHeight.animateTo(if(showSettings.value) 300f else 42f, spring(0.9f, 500f))

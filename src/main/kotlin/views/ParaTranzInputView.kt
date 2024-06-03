@@ -93,9 +93,9 @@ fun ParaTranzInputView(label: String = "", placeholder: String = "", customRegex
     Box(modifier = Modifier
         .clip(AbsoluteSmoothCornerShape(cornerRadius = 16.dp, smoothnessAsPercent = 60))
         .then(
-            if (warning) Modifier
+            if (warning || required && string.value.isEmpty()) Modifier
                 .clip(AbsoluteSmoothCornerShape(cornerRadius = 16.dp, smoothnessAsPercent = 60))
-                .border(2.dp, Color(0xff027BFF), AbsoluteSmoothCornerShape(cornerRadius = 16.dp, smoothnessAsPercent = 60))
+                .border(2.dp, if (!warning) Color(0x86027BFF) else Color(0xff027BFF), AbsoluteSmoothCornerShape(cornerRadius = 16.dp, smoothnessAsPercent = 60))
             else Modifier
         )
         .then(
@@ -107,7 +107,7 @@ fun ParaTranzInputView(label: String = "", placeholder: String = "", customRegex
             else Modifier
         )
         .background(
-            Color(if (required) 0xfff3f3f3 else 0xfff1f1f1),
+            Color(if (required && string.value.isEmpty()) 0xfff9f9f9 else 0xfff1f1f1),
             shape = AbsoluteSmoothCornerShape(cornerRadius = 16.dp, smoothnessAsPercent = 60)
         )
         .padding(horizontal = 12.dp, vertical = 8.dp),
