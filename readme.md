@@ -1,6 +1,6 @@
 # ParaTranz Converter for LawnStrings
 
-> 一款使用 Kotlin 与 Compose for Desktop 编写的 LawnStrings 与 ParaTranz 格式 JSON 互转的跨平台 GUI 工具。
+> 一款使用 Kotlin 与 Compose for Desktop 编写的 LawnStrings 与 ParaTranz 格式 JSON 互转的跨平台 GUI 工具。下简称 Converter。
 
 ![image-20240603101211720](./assets/image-20240603101211720.png)
 
@@ -10,11 +10,7 @@
 
 - [x] macOS
 
-
-
 ---
-
-
 
 ## 使用方法
 
@@ -27,31 +23,23 @@
    1. 直接拖入文件，进行载入。
    2. 单击 **载入文件** 按钮，在弹出的窗口中选择文件。
 
-2. 判断完成后，若 Converter 可以确认载入文件的格式，你只能选择对应的推荐目标格式；若 Converter 无法判断，你仍可以选择其中一个目标格式进行尝试。单击你需要转换的目标文件格式。
+2. 判断完成后，若 Converter 可以确认载入文件的格式，你只能选择对应的推荐目标格式；若 Converter 无法判断，你仍可以选择其中一个目标格式进行尝试。
 
-   - 转换为 LawnStrings 时，需要指定 **版本号**、 **构建号**，以及是否为 **正式版**。分别会替换掉字符串中的 `{version_full}`、`{build_number}`、`{rel_pre}`，并根据 `{version_full}` 的前两段生成 `{version_main}`，方便对 LawnStrings 对应版本进行管理，并在游戏中展示。
+   - 转换为 LawnStrings 时，需要指定 **版本号**、 **构建号**，以及是否为 **正式版**。分别会替换掉字符串中的 `{version_full}`、`{build_number}`、`{rel_pre}`，并根据 `{version_full}` 的前两段生成 `{version_main}`、根据`{rel_pre}`生成 `REL` 或 `PRE`，方便对 LawnStrings 对应的版本进行管理，并在游戏中展示。
 
-3. 在你期望的目录下进行保存。
-
-
+3. 单击你需要转换的目标文件格式，在弹出的窗口中选择你期望保存的目录进行保存。
 
 ### 置顶窗口
 
-> 你可以置顶窗口以更方便地拖入文件。
+> 你可以让 Converter 的窗口始终保持在屏幕最前端，以更方便地拖入文件。
 
-- 单击 ![pin](./src/main/resources/images/pin.svg) 即可置顶窗口；再次单击即可取消置顶。
-
-
+- 单击 ![pin](./src/main/resources/images/pin.svg) 置顶窗口；再次单击即可取消置顶。
 
 ### ParaTranz API
 
 *UNDER CONSTRUCTION*
 
-
-
 ---
-
-
 
 ## To-do
 
@@ -62,11 +50,7 @@
   - [ ] 实际接入
 - [ ] 自动转为 RTON
 
-
-
 ---
-
-
 
 ## Credits
 
