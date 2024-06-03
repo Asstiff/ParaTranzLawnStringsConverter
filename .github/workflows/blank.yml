@@ -2,13 +2,8 @@ name: Build and Release
 
 on:
   push:
-    branches:
-      - main
     tags:
       - 'v*' # 只有以 'v' 开头的标签触发工作流程
-  pull_request:
-    branches:
-      - main
 
 jobs:
   build:
@@ -87,7 +82,7 @@ jobs:
             - First Change
             - Second Change
           draft: false
-          prerelease: true
+          prerelease: false
 
       - name: Upload macOS Build to Release
         uses: actions/upload-release-asset@v1
