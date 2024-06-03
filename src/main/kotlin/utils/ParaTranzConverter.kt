@@ -54,10 +54,10 @@ object ParaTranzConverter {
             resultEncode = resultEncode.replace("\\\\n", "\\n")
             resultEncode = resultEncode.replace("/\\n", "\\\\n")
 
-            resultEncode = resultEncode.replace("【version_main】", versionMain)
-            resultEncode = resultEncode.replace("【rel_pre】", relPre)
-            resultEncode = resultEncode.replace("【number】", number.toString())
-            resultEncode = resultEncode.replace("【version_full】", versionFull)
+            resultEncode = resultEncode.replace("{version_main}", versionMain)
+            resultEncode = resultEncode.replace("{rel_pre}", relPre)
+            resultEncode = resultEncode.replace("{build_number}", number.toString())
+            resultEncode = resultEncode.replace("{version_full}", versionFull)
 
             resultEncode = "{\"objects\":[{\"aliases\":[\"LawnStringsData\"],\"objclass\":\"LawnStringsData\",\"objdata\":{\"LocStringValues\":$resultEncode}}],\"version\":1}"
 
