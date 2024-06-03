@@ -75,7 +75,7 @@ fun MainView(){
     ) {
         Column( verticalArrangement = Arrangement.spacedBy(12.dp)) {
 
-            ParaTranzInputView(label = "版本号", string = versionText, placeholder = "11.4.1", required = true, hint = if (versionText.value.isEmpty()) "请输入适配版本号。" else "版本号格式不正确。", warning = showWarning.value, showHint = showWarning)
+            ParaTranzInputView(label = "版本号", string = versionText, placeholder = "11.4.1", required = fileType.value == ImportedFileType.PARA && versionText.value.isEmpty(), hint = if (versionText.value.isEmpty()) "请输入适配版本号。" else "版本号格式不正确。", warning = showWarning.value, showHint = showWarning)
 
             Row(horizontalArrangement = Arrangement.spacedBy(4.dp), verticalAlignment = Alignment.CenterVertically) {
                 Row(modifier = Modifier
