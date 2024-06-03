@@ -327,7 +327,7 @@ fun App(window: JFrame) {
                         ImportedFile.isDroppable.value = false
                     }
                 } catch (ex: Exception) {
-                    ex.printStackTrace()
+                    Message.showMessage("确保拖入的是一个文件。")
                 }
             }
 
