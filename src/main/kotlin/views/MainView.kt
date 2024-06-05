@@ -9,6 +9,7 @@ import ImportedFile.loading
 import ImportedFile.setFile
 import ImportedFileType
 import Message
+import Window.locale
 import Window.windowPinned
 import androidx.compose.animation.core.CubicBezierEasing
 import androidx.compose.animation.core.spring
@@ -40,6 +41,7 @@ import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import languageSupport.LocalizationKey
 import utils.ParaTranzConverter
 import java.awt.Cursor
 import java.awt.FileDialog
@@ -75,7 +77,7 @@ fun MainView(){
     ) {
         Column( verticalArrangement = Arrangement.spacedBy(12.dp)) {
 
-            ParaTranzInputView(label = "版本号", string = versionText, placeholder = "11.4.1", required = fileType.value == ImportedFileType.PARA && versionText.value.isEmpty(), hint = if (versionText.value.isEmpty()) "请输入适配版本号。" else "版本号格式不正确。", warning = showWarning.value, showHint = showWarning)
+            ParaTranzInputView(label = locale.getString(LocalizationKey.INPUT_LABEL_VERSION), string = versionText, placeholder = "11.4.1", required = fileType.value == ImportedFileType.PARA && versionText.value.isEmpty(), hint = if (versionText.value.isEmpty()) locale.getString(LocalizationKey.INPUT_HINT_NO_VERSION) else locale.getString(LocalizationKey.INPUT_HINT_INVALID_VERSION), warning = showWarning.value, showHint = showWarning)
 
             Row(horizontalArrangement = Arrangement.spacedBy(4.dp), verticalAlignment = Alignment.CenterVertically) {
                 Row(modifier = Modifier
@@ -93,7 +95,7 @@ fun MainView(){
                     ,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Text("构建号", style = TextStyle(color = Color(0xff717171), fontWeight = FontWeight.Normal), modifier = Modifier.width(54.dp))
+                    Text(locale.getString(LocalizationKey.INPUT_LABEL_BUILD), style = TextStyle(color = Color(0xff717171), fontWeight = FontWeight.Normal), modifier = Modifier.width(54.dp))
                     BasicTextField(
                         value = buildNumber.toString(),
                         textStyle = TextStyle(color = Color(0xff414141), fontWeight = FontWeight.SemiBold),
@@ -119,7 +121,7 @@ fun MainView(){
                         modifier = Modifier.fillMaxWidth().padding(8.dp),
                         decorationBox = { innerTextField ->
                             if (buildNumber.toString().isEmpty()) {
-                                Text("Number")
+                                Text("1")
                             }
                             innerTextField()
                         }
@@ -139,7 +141,7 @@ fun MainView(){
                     ,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Text("正式版", style = TextStyle(color = Color(0xff717171), fontWeight = FontWeight.Normal))
+                    Text(locale.getString(LocalizationKey.INPUT_LABEL_RELEASE), style = TextStyle(color = Color(0xff717171), fontWeight = FontWeight.Normal))
                     Box(modifier = Modifier
                         .padding(vertical = 6.dp)
                         .padding(start = 8.dp)
@@ -175,7 +177,7 @@ fun MainView(){
         ) {
             ParaTranzButton(ParaTranzButtonTypes.CLEAR,
                 imagePath = if ((loadedFilename.value.isNotEmpty() || fileContent.value.isNotEmpty()) && !isDroppable.value) "images/repick.svg" else "images/import.svg",
-                lable = if (isDroppable.value) "" else if ((loadedFilename.value.isNotEmpty() || fileContent.value.isNotEmpty())) loadedFilename.value else "载入文件",
+                lable = if (isDroppable.value) "" else if ((loadedFilename.value.isNotEmpty() || fileContent.value.isNotEmpty())) loadedFilename.value else locale.getString(LocalizationKey.BUTTON_LABEL_LOAD_FILE),
                 modifier = Modifier
                     .shadow(
                         elevation = ((dragAnimation.value - 1) * 80).dp,
@@ -189,7 +191,7 @@ fun MainView(){
                         cancelJob()
                     }
                     else{
-                        val file = chooseFile("选择文件")
+                        val file = chooseFile(locale.getString(LocalizationKey.WINDOW_SELECT_FILE_TITLE))
                         if (file != null) {
                                 setFile(file = file)
                             }
@@ -222,20 +224,20 @@ fun MainView(){
                 Spacer(modifier = Modifier.weight(1f))
                 ParaTranzButton(
                     type = if ((fileType.value == ImportedFileType.LAWN)) ParaTranzButtonTypes.SUGGESTED else ParaTranzButtonTypes.NORMAL,
-                    lable = "转为 ParaTranz",
+                    lable = locale.getString(LocalizationKey.BUTTON_LABEL_TO_PARA),
                     enabled = fileContent.value.isNotEmpty() && (fileType.value != ImportedFileType.PARA),
                     onclick = {
-                    val file = saveFile("保存文件", "LawnStrings-ParaTranz.json")
+                    val file = saveFile(locale.getString(LocalizationKey.WINDOW_SAVE_FILE_TITLE), "LawnStrings-ParaTranz.json")
                         if (file != null) {
                             scope.launch(Dispatchers.IO) {
                                 try {
                                     ParaTranzConverter.toParaTranz(fileContent.value, file)
                                     withContext(Dispatchers.Default) {
-                                        Message.showMessage("文件已成功转换为 ParaTranz 格式")
+                                        Message.showMessage(locale.getString(LocalizationKey.ALERT_CONVERSION_SUCCESS_TITLE), locale.getString(LocalizationKey.ALERT_CONVERSION_SUCCESS_PARA))
                                     }
                                 }
                                 catch (_ : Exception){
-                                    Message.showMessage("导出出错。")
+                                    Message.showMessage(locale.getString(LocalizationKey.ALERT_CONVERSION_FAILED_TITLE), locale.getString(LocalizationKey.ALERT_CONVERSION_FAILED))
                                 }
                             }
                         }
@@ -244,24 +246,24 @@ fun MainView(){
                 ParaTranzButton(
                     type = if ((fileType.value == ImportedFileType.PARA)) ParaTranzButtonTypes.SUGGESTED else ParaTranzButtonTypes.NORMAL,
                     enabled = fileContent.value.isNotEmpty() && (fileType.value != ImportedFileType.LAWN),
-                    lable = "转为 LawnStrings",
+                    lable = locale.getString(LocalizationKey.BUTTON_LABEL_TO_LAWN),
                     onclick = {
                     if (fileContent.value.isNotEmpty() && versionText.value.isNotEmpty() && versionText.value.matches(Regex("^\\d+\\.\\d+\\.\\d+\$"))) {
                         val versionMain = versionText.value.split('.').take(2).joinToString(".")
                         val versionFull = versionText
                         val relPre = if (isRelChecked) "REL" else "PRE"
-                        val file = saveFile("保存文件", "LawnStrings-en-us.json")
+                        val file = saveFile(locale.getString(LocalizationKey.WINDOW_SAVE_FILE_TITLE), "LawnStrings-en-us.json")
                         if (file != null) {
                             scope.launch(Dispatchers.IO) {
                                 try {
                                     ParaTranzConverter.toJson(fileContent.value, file, versionMain, versionFull.value, relPre, buildNumber)
                                     buildNumber++
                                     withContext(Dispatchers.Default) {
-                                        Message.showMessage("文件已成功转换为 LawnStrings 格式")
+                                        Message.showMessage(locale.getString(LocalizationKey.ALERT_CONVERSION_SUCCESS_TITLE), locale.getString(LocalizationKey.ALERT_CONVERSION_SUCCESS_LAWN))
                                     }
                                 }
                                 catch (_ : Exception){
-                                    Message.showMessage("导出出错。")
+                                    Message.showMessage(locale.getString(LocalizationKey.ALERT_CONVERSION_FAILED_TITLE), locale.getString(LocalizationKey.ALERT_CONVERSION_FAILED))
                                 }
                             }
                         }

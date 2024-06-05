@@ -1,5 +1,6 @@
 import APIConfig.showSettings
 import ImportedFile.setFile
+import Window.locale
 import Window.windowPinned
 import androidx.compose.animation.Animatable
 import androidx.compose.animation.core.Animatable
@@ -37,6 +38,8 @@ import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.WindowState
 import androidx.compose.ui.window.application
 import kotlinx.coroutines.*
+import languageSupport.Localization
+import languageSupport.LocalizationKey
 import views.AbsoluteSmoothCornerShape
 import views.MainView
 import views.ParaTranzButton
@@ -66,13 +69,22 @@ object APIConfig {
 
 object Window {
     val windowPinned = mutableStateOf(false)
+    lateinit var locale: Localization
 }
 
 object Message {
+    private val title = mutableStateOf("")
     private val message = mutableStateOf("")
     private val showMessage = mutableStateOf(false)
 
+    fun showMessage(title: String, message: String) {
+        this.title.value = title
+        this.message.value = message
+        showMessage.value = true
+    }
+
     fun showMessage(message: String) {
+        this.title.value = locale.getString(LocalizationKey.ALERT_DEFAULT_TITLE)
         this.message.value = message
         showMessage.value = true
     }
@@ -87,6 +99,7 @@ object Message {
 
     fun isMessageEmpty() = this.message.value.isEmpty()
     fun getMessage() = this.message.value
+    fun getTitle() = this.title.value
     fun getShowMessage() = this.showMessage.value
 }
 
@@ -117,14 +130,14 @@ object ImportedFile {
                         fileType.value = ImportedFileType.PARA
                     } else {
                         fileType.value = ImportedFileType.NONE
-                        Message.showMessage("无法确定载入文件格式，但你依然可以尝试进行转换。")
+                        Message.showMessage(locale.getString(LocalizationKey.ALERT_FILE_FORMAT_EXCEPTION_TITLE), locale.getString(LocalizationKey.ALERT_FILE_FORMAT_EXCEPTION))
                     }
                 } catch (e: Throwable) {
                     withContext(Dispatchers.IO) {
                         fileType.value = ImportedFileType.NONE
                         fileContent.value = ""
                         loadedFilename.value = ""
-                        Message.showMessage("文件读取失败：\n${e.message}\nWhatever that means.")
+                        Message.showMessage(locale.getString(LocalizationKey.ALERT_FILE_LOAD_EXCEPTION_TITLE), "${e.message}")
                     }
                 } finally {
                     loading.value = false
@@ -132,7 +145,7 @@ object ImportedFile {
             }
         }
         else{
-            Message.showMessage("文件过大。")
+            Message.showMessage(locale.getString(LocalizationKey.ALERT_FILE_SIZE_EXCEPTION_TITLE), locale.getString(LocalizationKey.ALERT_FILE_SIZE_EXCEPTION))
         }
     }
 
@@ -188,7 +201,7 @@ fun App(window: JFrame) {
             settingsScaleAnimation.animateTo(if(showSettings.value) 0.95f else 1f, tween(500, easing = CubicBezierEasing(0.5f, 1.3f, 0.3f, 0.95f)))
         }
         launch {
-            settingsContentScaleAnimation.animateTo(if(showSettings.value) 1f else 0f, tween(270, delayMillis = if (showSettings.value) 100 else 0, easing = CubicBezierEasing(0.2f, 0.65f, 0f, 1f)))
+            settingsContentScaleAnimation.animateTo(if(showSettings.value) 1f else 0f, tween(250, delayMillis = if (showSettings.value) 80 else 0, easing = CubicBezierEasing(0.2f, 0.65f, 0f, 1f)))
         }
         launch {
             settingsColor.animateTo(if(showSettings.value) Color.White else Color(0xff027BFF), tween(300, easing = CubicBezierEasing(0.5f, 1f, 0.3f, 0.95f)))
@@ -221,8 +234,8 @@ fun App(window: JFrame) {
         ) {
             Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.padding(top = 36.dp, bottom = 24.dp)) {
                 Image(painterResource("images/paratranz_logo.png"), contentDescription = "", modifier = Modifier.height(height = 38.dp))
-                Text("Converter", style = TextStyle(fontSize = 18.sp, color = Color(0xff707070)), fontWeight = FontWeight.Bold)
-                Text("for LawnStrings", style = TextStyle(fontSize = 12.sp, color = Color(0xff707070)), fontWeight = FontWeight.Normal)
+                Text(locale.getString(LocalizationKey.WINDOW_TITLE_CONVERTER), style = TextStyle(fontSize = 18.sp, color = Color(0xff707070)), fontWeight = FontWeight.Bold)
+                Text(locale.getString(LocalizationKey.WINDOW_TITLE_FOR_LAWNSTRINGS), style = TextStyle(fontSize = 12.sp, color = Color(0xff707070)), fontWeight = FontWeight.Normal)
             }
             MainView()
         }
@@ -272,7 +285,7 @@ fun App(window: JFrame) {
                     )
                     .alpha(settingsContentScaleAnimation.value)
                 )
-                Text("ParaTranz API", style = TextStyle(color = Color(0xfff3f3f3), fontSize = 14.sp), textAlign = TextAlign.Center, maxLines = 1, modifier = Modifier.alpha((1 - settingsAlpha.value)))
+                Text(locale.getString(LocalizationKey.BUTTON_LABEL_PARA_API), style = TextStyle(color = Color(0xfff3f3f3), fontSize = 14.sp), textAlign = TextAlign.Center, maxLines = 1, modifier = Modifier.alpha((1 - settingsAlpha.value)))
             }
         }
 
@@ -301,12 +314,12 @@ fun App(window: JFrame) {
                     ,
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    Text("提示", style = TextStyle(fontSize = 16.sp, color = Color(0xff707070)), fontWeight = FontWeight.Bold)
+                    Text(Message.getTitle(), style = TextStyle(fontSize = 16.sp, color = Color(0xff707070)), fontWeight = FontWeight.Bold, textAlign = TextAlign.Center, modifier = Modifier.padding(vertical = 6.dp))
                     Divider(modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp), color = Color(0x20707070))
                     Column(modifier = Modifier.padding(vertical = 24.dp, horizontal = 12.dp), verticalArrangement = Arrangement.Center){
                         Text(Message.getMessage(), style = TextStyle(fontSize = 14.sp, color = Color(0xff484848)), textAlign = TextAlign.Center, maxLines = 4, overflow = TextOverflow.Ellipsis)
                     }
-                    ParaTranzButton(type = SUGGESTED, lable = "好", onclick = {
+                    ParaTranzButton(type = SUGGESTED, lable = locale.getString(LocalizationKey.OK), onclick = {
                         Message.clearMessage()
                     })
                 }
@@ -327,7 +340,7 @@ fun App(window: JFrame) {
                         ImportedFile.isDroppable.value = false
                     }
                 } catch (ex: Exception) {
-                    Message.showMessage("确保拖入的是一个文件。")
+                    Message.showMessage(locale.getString(LocalizationKey.ALERT_FILE_DRAG_INVALID_EXCEPTION))
                 }
             }
 
@@ -347,8 +360,10 @@ fun main() = application {
         window.minimumSize = Dimension(520, 422)
         window.isResizable = false
         window.isAlwaysOnTop = windowPinned.value
-        window.name = "ParaTranz Converter"
-        window.title = "ParaTranz Converter for LawnStrings"
+
+        locale = Localization("messages")
+        window.name = locale.getString(LocalizationKey.WINDOW_NAME)
+        window.title = locale.getString(LocalizationKey.WINDOW_TITLE)
         App(window)
     }
 }

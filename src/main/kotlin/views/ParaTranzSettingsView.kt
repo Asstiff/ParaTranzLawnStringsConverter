@@ -2,6 +2,7 @@ package views
 
 import APIConfig
 import APIConfig.showSettings
+import Window.locale
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.Divider
@@ -18,6 +19,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import languageSupport.LocalizationKey
 
 @Composable
 fun NoLayoutCalculationsComposable(
@@ -59,16 +61,16 @@ fun ParaTranzSettingsView(modifier: Modifier = Modifier) {
             LazyColumn {
                 item {
                     Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                        ParaTranzInputView(label = "API Key", string = apiKey, maxLength = 32, required = true,
-                            warning = apiKey.value.length != 32 && showWarning1.value, showHint = showWarning1, hint = if (apiKey.value.isEmpty()) "请填写 API Key。" else "API Key 为 32 字符。")
-                        ParaTranzInputView(label = "项目 ID", string = projectId, required = true, customRegex = "^\\d+\$", maxLength = 6, warning = showWarning2.value, showHint = showWarning2, hint = "请填写项目 ID。")
-                        ParaTranzInputView(label = "文件名", string = fileName, required = true, maxLength = 128, warning = showWarning3.value, showHint = showWarning3, hint = "请填写文件名。")
+                        ParaTranzInputView(label = locale.getString(LocalizationKey.INPUT_LABEL_API_KEY), string = apiKey, maxLength = 32, required = true,
+                            warning = apiKey.value.length != 32 && showWarning1.value, showHint = showWarning1, hint = if (apiKey.value.isEmpty()) locale.getString(LocalizationKey.INPUT_HINT_NO_API_KEY) else locale.getString(LocalizationKey.INPUT_HINT_INVALID_API_KEY))
+                        ParaTranzInputView(label = locale.getString(LocalizationKey.INPUT_LABEL_PROJECT_ID), string = projectId, required = true, customRegex = "^\\d+\$", maxLength = 6, warning = showWarning2.value, showHint = showWarning2, hint = locale.getString(LocalizationKey.INPUT_HINT_NO_PROJECT_ID))
+                        ParaTranzInputView(label = locale.getString(LocalizationKey.INPUT_LABEL_FILE_NAME), string = fileName, required = true, maxLength = 128, warning = showWarning3.value, showHint = showWarning3, hint = locale.getString(LocalizationKey.INPUT_HINT_NO_FILE_NAME))
                     }
                 }
             }
             if (showSettings.value){
                 Row(modifier = Modifier.weight(1f), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    ParaTranzButton(type = ParaTranzButtonTypes.NORMAL, lable = "取消", onclick = {
+                    ParaTranzButton(type = ParaTranzButtonTypes.NORMAL, lable = locale.getString(LocalizationKey.BUTTON_LABEL_CANCEL), onclick = {
                         if (fileName.value.isEmpty()) {
                             fileName.value = APIConfig.fileName.value
                         }
@@ -80,7 +82,7 @@ fun ParaTranzSettingsView(modifier: Modifier = Modifier) {
                         }
                         showSettings.value = false
                     })
-                    ParaTranzButton(type = ParaTranzButtonTypes.SUGGESTED, lable = "确定", onclick = {
+                    ParaTranzButton(type = ParaTranzButtonTypes.SUGGESTED, lable = locale.getString(LocalizationKey.BUTTON_LABEL_DONE), onclick = {
                         if (apiKey.value.isNotEmpty() && apiKey.value.length == 32 && projectId.value.isNotEmpty() && fileName.value.isNotEmpty()){
                             APIConfig.fileName.value = fileName.value
                             APIConfig.projectId.value = projectId.value
